@@ -1,0 +1,9 @@
+#!/bin/zsh
+PATH_DIR=$1
+NAME=$2
+FINAL_DIR="$PATH_DIR/$NAME"
+
+echo "#!/bin/zsh\n" > "$FINAL_DIR"
+chmod +x "$FINAL_DIR"
+
+"/usr/bin/$VISUAL" "$FINAL_DIR"

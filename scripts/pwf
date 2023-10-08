@@ -1,0 +1,56 @@
+#!/bin/zsh
+
+clean_locks() {
+    rm "$RSCHLOCK"
+}
+log_date() {
+    local JSON
+    JSON="{\"shutdownDate\": \"$(date '+%Y-%m-%dT%H:%M:%S')\"}"
+
+    echo "$JSON" > /var/tmp/shutdown.cache
+}
+tasks_eod() {
+    # Finalize all today tasks
+    echo "all" | task +TODAY status:pending +INSTANCE "done"
+
+    task +TODAY all
+
+    rm "$PERMLOCKSDIR"/tasks
+}
+last_shutdown_dialog() {
+    echo -n "Is this the last shutdown? (y/n): "
+    read -r answer
+
+    if [[ "$answer" == "y" ]] ||
+        [[ "$answer" == "Y" ]] ||
+        [[ "$answer" == "yes" ]]; then
+        
+	    "$MYBIN"/worktime PreWork
+
+	    if [[ "$1" == "true" ]]; then
+	        tasks_eod
+	    fi
+        
+        clean_locks
+        "$BSPDIR"/scripts/bspasroot backup_con
+    fi
+}
+
+
+exec > >(tee -a "/var/tmp/logs/pwf_$(date +%Y-%m-%d).log")
+exec 2>&1
+
+if [[ "$1" == '--no-done-tasks' ]]; then
+    echo "Executing without done tasks!"
+    last_shutdown_dialog "false"
+    shift 1
+else
+    last_shutdown_dialog "true"
+fi
+
+log_date
+if [[ $# -gt 0 ]]; then
+    shutdown "$@"
+else
+    shutdown now
+fi

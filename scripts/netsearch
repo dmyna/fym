@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+## Copyright (C) 2020-2023 Aditya Shakya <adi1090x@gmail.com>
+## Copyright 2023 Dev Myna <var.devmyna@gmail.com>
+
+# Import Current Theme
+DIR="$HOME/.config/bspwm"
+STYLE="emo"
+RASI="$DIR/themes/$STYLE/rofi/netsearch.rasi"
+DEFAULT_BASE_LINK="https://duckduckgo.com/?q="
+
+# Set Search Engine
+case $1 in
+    -b)
+        BASE_LINK="https://www.bing.com/search?q="
+        shift
+        ;;
+    *)
+        BASE_LINK="$DEFAULT_BASE_LINK"
+        ;;
+esac
+
+# Open Rofi
+rofi_script() {
+    rofi -dmenu \
+     -p "Search" \
+     -theme "$RASI"
+}
+
+# Get Query
+QUERY=$(rofi_script)
+
+# Search if has query
+if [[ -n "$QUERY" ]]; then
+    vivaldi-stable "$BASE_LINK$QUERY"
+fi
